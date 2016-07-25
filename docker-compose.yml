@@ -6,3 +6,52 @@ proxy:
     ports:
         - 80:80
     restart: always
+
+hostlist_dockergen:
+    image: hairmare/nginx-proxy-hostlist
+    volumes:
+        - /var/run/docker.sock:/var/run/docker.sock:ro
+hostlist_www:
+    image: hairmare/nginx-proxy-hostlist-web
+    volumes_from:
+        - hostlist_dockergen
+    environment:
+        VIRTUAL_HOST: hostlist.vcap.me
+
+mongodb:
+    image: mongo
+    ports:
+        - 27017:27017
+
+mongo-express:
+    image: mongo-express
+    links:
+        - mongodb:mongo
+    environment:
+        VIRTUAL_HOST: mongo-express.vcap.me
+
+rabbitmq:
+    image: rabbitmq:management
+    ports:
+        - 5671:5671
+        - 5672:5672
+        - 15671:15671
+        - 15672:15672
+        - 25672:25672
+        - 4369:4369
+    environment:
+        VIRTUAL_HOST: rabbitmq.vcap.me
+        VIRTUAL_PORT: 15672
+
+postgresql:
+    image: postgres
+    environment:
+        POSTGRES_USER: postgres
+        POSTGRES_PASSWORD: postgres
+
+phppgadmin:
+    image: maxexcloo/phppgadmin
+    links:
+        - postgresql:postgresql
+    environment:
+        VIRTUAL_HOST: phppgadmin.vcap.me
